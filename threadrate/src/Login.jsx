@@ -17,7 +17,7 @@ const Login = () => {
       const res = await axios.post('http://localhost:3001/login', form);
       localStorage.setItem('token', res.data.token); // You can use this later for protected routes
       setMessage('Logged in!');
-      setTimeout(() => navigate('/dashboard'), 1000); // Replace with your actual dashboard route
+      setTimeout(() => navigate('/home'), 1000); // Replace with your actual dashboard route
     } catch (err) {
       setMessage(err.response?.data?.error || 'Login failed.');
     }
