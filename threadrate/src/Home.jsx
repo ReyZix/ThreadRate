@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FaHome, FaStar, FaUser, FaBell, FaUpload, FaHeart, FaComment, FaShare } from 'react-icons/fa';
 import { useNavigate, Link } from 'react-router-dom';
-const [commentBoxOpen, setCommentBoxOpen] = useState({});
-const [commentText, setCommentText] = useState({});
 
 export default function Home() {
+  const [commentBoxOpen, setCommentBoxOpen] = useState({});
+  const [commentText, setCommentText] = useState({});
   const navigate = useNavigate();
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [posts, setPosts] = useState([]);
