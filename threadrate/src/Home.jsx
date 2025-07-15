@@ -3,8 +3,6 @@ import { FaHome, FaStar, FaUser, FaBell, FaUpload, FaHeart, FaComment, FaShare }
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Home() {
-  const [commentBoxOpen, setCommentBoxOpen] = useState({});
-  const [commentText, setCommentText] = useState({});
   const navigate = useNavigate();
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [posts, setPosts] = useState([]);
@@ -42,11 +40,11 @@ export default function Home() {
         {[...Array(5)].map((_, i) => (
           <FaStar
             key={i}
-            className={`text-sm ${
+            className={text-sm ${
               i < Math.floor(rating) 
                 ? 'text-yellow-400' 
                 : 'text-muted-foreground'
-            }`}
+            }}
           />
         ))}
         <span className="text-sm font-medium ml-1">{rating}</span>
@@ -135,11 +133,11 @@ export default function Home() {
                     <div className="flex items-center gap-6">
                       <button
                         onClick={() => handleLike(post._id)}
-                        className={`flex items-center gap-2 transition-colors ${
+                        className={flex items-center gap-2 transition-colors ${
                           likedPosts.has(post._id)
                             ? 'text-red-500'
                             : 'text-muted-foreground hover:text-red-500'
-                        }`}
+                        }}
                       >
                         <FaHeart className={likedPosts.has(post._id) ? 'fill-current' : ''} />
                         <span className="font-medium">
@@ -147,17 +145,9 @@ export default function Home() {
                         </span>
                       </button>
 
-                      <button
-                        onClick={() =>
-                          setCommentBoxOpen(prev => ({
-                            ...prev,
-                            [post._id]: !prev[post._id],
-                          }))
-                        }
-                        className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
-                      >
+                      <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
                         <FaComment />
-                        <span className="font-medium">Comment</span>
+                        <span className="font-medium">0</span>
                       </button>
 
                       <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
@@ -168,49 +158,8 @@ export default function Home() {
 
                     <button className="bg-primary/10 text-primary px-4 py-2 rounded-lg hover:bg-primary/20 transition-colors">
                       Rate Outfit
-                     </button>
+                    </button>
                   </div>
-
-                  {/* Comment Box */}
-                  {commentBoxOpen[post._id] && (
-                    <div className="mt-4 border border-border rounded-lg p-4 relative bg-white shadow-sm">
-                      <button
-                        className="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-lg"
-                        onClick={() =>
-                          setCommentBoxOpen(prev => ({
-                            ...prev,
-                            [post._id]: false,
-                          }))
-                        }
-                      >
-                        ×
-                      </button>
-                      <textarea
-                        className="w-full p-2 border border-gray-300 rounded-md resize-none text-sm"
-                        rows="3"
-                        placeholder="Write a comment..."
-                        value={commentText[post._id] || ''}
-                        onChange={e =>
-                          setCommentText(prev => ({
-                            ...prev,
-                            [post._id]: e.target.value,
-                          }))
-                        }
-                      />
-                      <div className="flex justify-end mt-2">
-                        <button
-                          className="bg-gradient-primary text-white px-4 py-2 rounded hover:shadow-glow transition"
-                          onClick={() => {
-                            console.log(`Posting comment on post ${post._id}:`, commentText[post._id]);
-                            setCommentText(prev => ({ ...prev, [post._id]: '' }));
-                            setCommentBoxOpen(prev => ({ ...prev, [post._id]: false }));
-                          }}
-                        >
-                          Post
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </article>
             ))
@@ -231,3 +180,5 @@ export default function Home() {
     </div>
   );
 }
+
+
