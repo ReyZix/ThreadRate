@@ -40,11 +40,11 @@ export default function Home() {
         {[...Array(5)].map((_, i) => (
           <FaStar
             key={i}
-            className={text-sm ${
+            className={`text-sm ${
               i < Math.floor(rating) 
                 ? 'text-yellow-400' 
                 : 'text-muted-foreground'
-            }}
+            }`}
           />
         ))}
         <span className="text-sm font-medium ml-1">{rating}</span>
@@ -133,11 +133,11 @@ export default function Home() {
                     <div className="flex items-center gap-6">
                       <button
                         onClick={() => handleLike(post._id)}
-                        className={flex items-center gap-2 transition-colors ${
+                        className={`flex items-center gap-2 transition-colors ${
                           likedPosts.has(post._id)
                             ? 'text-red-500'
                             : 'text-muted-foreground hover:text-red-500'
-                        }}
+                        }`}
                       >
                         <FaHeart className={likedPosts.has(post._id) ? 'fill-current' : ''} />
                         <span className="font-medium">
@@ -180,5 +180,3 @@ export default function Home() {
     </div>
   );
 }
-
-
