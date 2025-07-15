@@ -21,7 +21,7 @@ const Login = () => {
       // Simulate API call for demo
       await new Promise(resolve => setTimeout(resolve, 1500));
       setMessage('Welcome back! Redirecting...');
-      setTimeout(() => navigate('/home'), 1000);
+      setTimeout(() => navigate('/'), 1000);
     } catch (err) {
       setMessage('Login failed. Please try again.');
     } finally {
