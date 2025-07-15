@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Signup from './Signup';
 import Login from './Login'; 
 import Upload from './Upload';
+import Home from './Home';
+
 
 function App() {
   return (

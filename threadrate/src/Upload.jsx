@@ -13,22 +13,55 @@ export default function Upload() {
   }
 
   // Handle post button click
-  function handlePost() {
-    if (!image) {
-      alert('Please select an image.');
+  async function handlePost() {
+    if (!image || !subject) {
+      alert('Please select an image and enter a subject.');
       return;
     }
 
-    // For demo, just log the data
-    console.log('Posting image:', image);
-    console.log('Subject:', subject);
-    console.log('Description:', description);
+    const formData = new FormData();
+    formData.append('file', image);
+    formData.append('upload_preset', 'ThreadRateImages'); // your unsigned preset name
 
-    // upload the image and description here
+    try {
+      // Step 1: Upload image to Cloudinary
+      const cloudinaryRes = await fetch(
+        'https://api.cloudinary.com/v1_1/dpuk8eew3/image/upload',
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
 
-    alert('Posted!');
-    setImage(null);
-    setDescription('');
+      const cloudinaryData = await cloudinaryRes.json();
+      const imageUrl = cloudinaryData.secure_url;
+
+      // Step 2: Post to your backend
+      const response = await fetch('http://localhost:5000/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: '685e280d0f06b59ed3286251', // REPLACE THIS ITS HARDCODED RIGHT NOW JUST FOR TESTING
+          title: subject,
+          description,
+          imageUrl,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('Upload successful!');
+        setImage(null);
+        setSubject('');
+        setDescription('');
+      } else {
+        alert(result.error || 'Upload failed.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred.');
+    }
   }
 
   return (
@@ -46,14 +79,14 @@ export default function Upload() {
         type="text"
         placeholder="Subject"
         value={subject}
-        onChange={e => setSubject(e.target.value)}
+        onChange={(e) => setSubject(e.target.value)}
         style={{ width: '100%', marginTop: 10, padding: '8px' }}
       />
 
       <textarea
         placeholder="Add a description"
         value={description}
-        onChange={e => setDescription(e.target.value)}
+        onChange={(e) => setDescription(e.target.value)}
         rows={4}
         style={{ width: '100%', marginTop: 10, padding: '8px' }}
       />

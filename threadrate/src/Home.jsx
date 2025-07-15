@@ -1,62 +1,26 @@
-import React, { useState } from 'react';
-import { FaHome, FaStar, FaUser, FaBell, FaCog, FaUpload, FaHeart, FaComment, FaShare } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-
-const fashionPosts = [
-  {
-    id: 1,
-    user: 'StyleQueen',
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b332c01c?w=50&h=50&fit=crop&crop=face',
-    title: 'Summer Vibes Outfit',
-    description: 'Loving this casual summer look! Perfect for brunch with friends 🌞',
-    image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=300&fit=crop',
-    rating: 4.8,
-    likes: 127,
-    comments: 23,
-    time: '2h ago'
-  },
-  {
-    id: 2,
-    user: 'FashionForward',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face',
-    title: 'Street Style Excellence',
-    description: 'Urban chic meets comfort. This jacket is everything! 🔥',
-    image: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=300&fit=crop',
-    rating: 4.9,
-    likes: 89,
-    comments: 15,
-    time: '4h ago'
-  },
-  {
-    id: 3,
-    user: 'TrendSetter',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&crop=face',
-    title: 'Elegant Evening Look',
-    description: 'Ready for tonight\'s dinner party. Feeling glamorous ✨',
-    image: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=300&fit=crop',
-    rating: 4.7,
-    likes: 203,
-    comments: 31,
-    time: '6h ago'
-  },
-  {
-    id: 4,
-    user: 'MinimalChic',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50&h=50&fit=crop&crop=face',
-    title: 'Minimalist Monday',
-    description: 'Sometimes less is more. Clean lines and neutral tones 🤍',
-    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop',
-    rating: 4.6,
-    likes: 156,
-    comments: 19,
-    time: '8h ago'
-  }
-];
+import React, { useState, useEffect } from 'react';
+import { FaHome, FaStar, FaUser, FaBell, FaUpload, FaHeart, FaComment, FaShare } from 'react-icons/fa';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Home() {
   const navigate = useNavigate();
   const [likedPosts, setLikedPosts] = useState(new Set());
+  const [posts, setPosts] = useState([]);
+
+  // Fetch posts from backend
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        const res = await fetch('http://localhost:5000/api/posts');
+        const data = await res.json();
+        setPosts(data);
+      } catch (err) {
+        console.error('Failed to load posts:', err);
+      }
+    }
+
+    fetchPosts();
+  }, []);
 
   const handleLike = (postId) => {
     setLikedPosts(prev => {
@@ -119,11 +83,8 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Welcome Section */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-foreground mb-4">
-            Discover Amazing Fashion
-          </h2>
+          <h2 className="text-4xl font-bold text-foreground mb-4">Discover Amazing Fashion</h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Rate, discover, and share the latest fashion trends with our community of style enthusiasts
           </p>
@@ -131,80 +92,78 @@ export default function Home() {
 
         {/* Fashion Feed */}
         <div className="space-y-8">
-          {fashionPosts.map((post) => (
-            <article 
-              key={post.id}
-              className="bg-card rounded-xl shadow-fashion border border-border overflow-hidden hover:shadow-glow transition-all duration-300"
-            >
-              {/* Post Header */}
-              <div className="p-6 pb-4">
-                <div className="flex items-center gap-3 mb-4">
-                  <img 
-                    src={post.avatar} 
-                    alt={post.user}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
+          {posts.length === 0 ? (
+            <p className="text-center text-muted-foreground">No posts yet. Be the first to upload!</p>
+          ) : (
+            posts.map((post) => (
+              <article
+                key={post._id}
+                className="bg-card rounded-xl shadow-fashion border border-border overflow-hidden hover:shadow-glow transition-all duration-300"
+              >
+                {/* Post Header */}
+                <div className="p-6 pb-4">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-white bg-primary">
+                      {post.title.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-foreground">{post.title}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(post.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <h4 className="text-xl font-bold text-foreground mb-2">{post.title}</h4>
+                  <p className="text-muted-foreground">{post.description}</p>
+                </div>
+
+                {/* Post Image */}
+                <div className="aspect-[4/3] overflow-hidden">
+                  <img
+                    src={post.imageUrl}
+                    alt={post.title}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{post.user}</h3>
-                    <p className="text-sm text-muted-foreground">{post.time}</p>
-                  </div>
-                  <StarRating rating={post.rating} />
                 </div>
-                
-                <h4 className="text-xl font-bold text-foreground mb-2">{post.title}</h4>
-                <p className="text-muted-foreground">{post.description}</p>
-              </div>
 
-              {/* Post Image */}
-              <div className="aspect-[4/3] overflow-hidden">
-                <img 
-                  src={post.image} 
-                  alt={post.title}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </div>
+                {/* Post Actions */}
+                <div className="p-6 pt-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                      <button
+                        onClick={() => handleLike(post._id)}
+                        className={`flex items-center gap-2 transition-colors ${
+                          likedPosts.has(post._id)
+                            ? 'text-red-500'
+                            : 'text-muted-foreground hover:text-red-500'
+                        }`}
+                      >
+                        <FaHeart className={likedPosts.has(post._id) ? 'fill-current' : ''} />
+                        <span className="font-medium">
+                          {likedPosts.has(post._id) ? 1 : 0}
+                        </span>
+                      </button>
 
-              {/* Post Actions */}
-              <div className="p-6 pt-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-6">
-                    <button 
-                      onClick={() => handleLike(post.id)}
-                      className={`flex items-center gap-2 transition-colors ${
-                        likedPosts.has(post.id) 
-                          ? 'text-red-500' 
-                          : 'text-muted-foreground hover:text-red-500'
-                      }`}
-                    >
-                      <FaHeart className={likedPosts.has(post.id) ? 'fill-current' : ''} />
-                      <span className="font-medium">{post.likes + (likedPosts.has(post.id) ? 1 : 0)}</span>
-                    </button>
-                    
-                    <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
-                      <FaComment />
-                      <span className="font-medium">{post.comments}</span>
-                    </button>
-                    
-                    <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
-                      <FaShare />
-                      <span className="font-medium">Share</span>
+                      <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                        <FaComment />
+                        <span className="font-medium">0</span>
+                      </button>
+
+                      <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                        <FaShare />
+                        <span className="font-medium">Share</span>
+                      </button>
+                    </div>
+
+                    <button className="bg-primary/10 text-primary px-4 py-2 rounded-lg hover:bg-primary/20 transition-colors">
+                      Rate Outfit
                     </button>
                   </div>
-                  
-                  <button className="bg-primary/10 text-primary px-4 py-2 rounded-lg hover:bg-primary/20 transition-colors">
-                    Rate Outfit
-                  </button>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {/* Load More */}
-        <div className="text-center mt-12">
-          <button className="bg-gradient-primary text-primary-foreground px-8 py-3 rounded-lg hover:shadow-glow transition-all duration-300 font-medium">
-            Load More Posts
-          </button>
+              </article>
+            ))
+          )}
         </div>
       </main>
 
