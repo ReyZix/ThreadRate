@@ -103,10 +103,12 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <button className="bg-gradient-primary text-primary-foreground px-4 py-2 rounded-lg hover:shadow-glow transition-all duration-300 flex items-center gap-2">
-              <FaUpload className="text-sm" />
-              Post Outfit
-            </button>
+            <Link to="/upload">
+              <button className="bg-gradient-primary text-primary-foreground px-4 py-2 rounded-lg hover:shadow-glow transition-all duration-300 flex items-center gap-2">
+                <FaUpload className="text-sm" />
+                Post Outfit
+              </button>
+            </Link>
             <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
               <FaUser className="text-primary-foreground text-sm" />
             </div>
