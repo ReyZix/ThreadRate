@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaHome, FaStar, FaUser, FaBell, FaCog, FaUpload, FaHeart, FaComment, FaShare } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const fashionPosts = [
   {
