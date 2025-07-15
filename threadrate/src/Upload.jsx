@@ -55,7 +55,7 @@ export default function Upload() {
         value={description}
         onChange={e => setDescription(e.target.value)}
         rows={4}
-        style={{ width: '100%', marginTop: 10 }}
+        style={{ width: '100%', marginTop: 10, padding: '8px' }}
       />
 
       <button onClick={handlePost} style={{ marginTop: 10 }}>
