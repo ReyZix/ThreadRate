@@ -62,6 +62,7 @@ export default function Home() {
           </h1>
           
           <nav className="hidden md:flex items-center gap-6">
+            <Link to ="/home">
               <button className="text-foreground hover:text-primary transition-colors">Discover</button>
             </Link>
             <Link to="/Following">
