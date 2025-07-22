@@ -63,11 +63,9 @@ export default function Home() {
           
           <nav className="hidden md:flex items-center gap-6">
             <button className="text-foreground hover:text-primary transition-colors">Discover</button>
-            <Link
-              to="/following"
-              className="text-foreground hover:text-primary transition-colors px-4 py-2 rounded-md"
-            >
-              <div>Following</div>
+            <Link to="/Following">
+              <button className="text-foreground hover:text-primary transition-colors">Following</button>
+                Following
             </Link>
             <Link to="/Trending">
               <button className="text-foreground hover:text-primary transition-colors">Trending</button>
