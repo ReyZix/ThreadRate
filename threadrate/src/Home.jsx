@@ -65,11 +65,9 @@ export default function Home() {
             <button className="text-foreground hover:text-primary transition-colors">Discover</button>
             <Link to="/Following">
               <button className="text-foreground hover:text-primary transition-colors">Following</button>
-                Following
             </Link>
             <Link to="/Trending">
               <button className="text-foreground hover:text-primary transition-colors">Trending</button>
-                Trending
             </Link>
           </nav>
 
