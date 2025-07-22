@@ -65,15 +65,15 @@ export default function Home() {
             <button className="text-foreground hover:text-primary transition-colors">Discover</button>
             <Link
               to="/trending"
-              className="px-4 py-2 bg-muted text-foreground hover:text-primary transition-colors rounded"
+              className="text-foreground hover:text-primary transition-colors px-4 py-2 rounded-md"
             >
-              Trending
+              <div>Trending</div>
             </Link>
             <Link
               to="/following"
-              className="px-4 py-2 bg-muted text-foreground hover:text-primary transition-colors rounded"
+              className="text-foreground hover:text-primary transition-colors px-4 py-2 rounded-md"
             >
-              Following
+              <div>Following</div>
             </Link>
           </nav>
 
