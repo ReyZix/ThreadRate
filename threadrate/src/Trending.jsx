@@ -113,7 +113,7 @@ export default function Home() {
                       {post.title.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-foreground">{post.username}</h3>
+                      <h3 className="font-semibold text-foreground">{post.title}</h3>
                       <p className="text-sm text-muted-foreground">
                         {new Date(post.createdAt).toLocaleString()}
                       </p>

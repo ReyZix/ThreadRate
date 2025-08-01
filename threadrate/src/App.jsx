@@ -3,6 +3,8 @@ import Signup from './Signup';
 import Login from './Login'; 
 import Upload from './Upload';
 import Home from './Home';
+import Following from './Following';
+import Trending from './Trending';
 
 
 function App() {
@@ -14,6 +16,9 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/upload" element={<Upload />} />
+          <Route path="/home" element={<Home />} /> 
+          <Route path="/trending" element={<Trending />} /> 
+          <Route path="/following" element={<Following />} /> 
           
         </Routes>
       </BrowserRouter>
