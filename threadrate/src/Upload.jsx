@@ -14,6 +14,13 @@ export default function Upload() {
 
   // Handle post button click
   async function handlePost() {
+        const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You must be logged in to post.');
+      return;
+    }
+    console.log("Token being used:", token);
+
     if (!image || !subject) {
       alert('Please select an image and enter a subject.');
       return;
@@ -36,17 +43,33 @@ export default function Upload() {
       const cloudinaryData = await cloudinaryRes.json();
       const imageUrl = cloudinaryData.secure_url;
 
+      if (!imageUrl) {
+  console.error("Image failed to upload:", cloudinaryData);
+  alert("Image upload failed.");
+  return;
+}
+
+console.log("Sending to backend:", {
+  title: subject,
+  description,
+  imageUrl,
+});
+
+
       // Step 2: Post to your backend
-      const response = await fetch('http://localhost:5000/api/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: '685e280d0f06b59ed3286251', // REPLACE THIS ITS HARDCODED RIGHT NOW JUST FOR TESTING
-          title: subject,
-          description,
-          imageUrl,
-        }),
-      });
+          const response = await fetch('http://localhost:5000/api/upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        title: subject,
+        description,
+        imageUrl,
+      }),
+    });
+
 
       const result = await response.json();
 

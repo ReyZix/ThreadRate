@@ -13,21 +13,37 @@ const Login = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      // Simulate API call for demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setMessage('Welcome back! Redirecting...');
-      setTimeout(() => navigate('/'), 1000);
-    } catch (err) {
-      setMessage('Login failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setMessage('');
+
+  try {
+    const res = await fetch('http://localhost:5000/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setMessage(data.error || 'Login failed. Please try again.');
+      return;
     }
-  };
+
+    // Save JWT token to localStorage
+    localStorage.setItem('token', data.token);
+    setMessage('Welcome back! Redirecting...');
+    setTimeout(() => navigate('/'), 1000);
+  } catch (err) {
+    console.error(err);
+    setMessage('Login failed. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-accent px-4 py-8">
