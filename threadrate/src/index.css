@@ -2,52 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
 
 @layer base {
   :root {
-    --background: 0 0% 99%;
-    --foreground: 240 10% 3.9%;
+    /* Minimalist white and light blue palette */
+    --background: 0 0% 100%;
+    --foreground: 215 25% 27%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 215 25% 27%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 215 25% 27%;
 
-    /* Fashion-focused brand colors */
-    --primary: 280 100% 70%;
-    --primary-foreground: 0 0% 98%;
-    --primary-glow: 285 100% 80%;
+    --primary: 210 100% 56%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 210 100% 70%;
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 6% 10%;
+    --secondary: 210 100% 97%;
+    --secondary-foreground: 215 25% 27%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    --muted: 210 50% 98%;
+    --muted-foreground: 215 15% 58%;
 
-    --accent: 315 100% 95%;
-    --accent-foreground: 315 100% 15%;
+    --accent: 210 100% 95%;
+    --accent-foreground: 215 25% 27%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 280 100% 70%;
+    --border: 210 30% 93%;
+    --input: 210 30% 96%;
+    --ring: 210 100% 56%;
 
-    /* Fashion gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-accent: linear-gradient(135deg, hsl(315 100% 80%), hsl(280 100% 85%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(240 5% 98%));
-
-    /* Shadows */
-    --shadow-fashion: 0 10px 30px -5px hsl(var(--primary) / 0.2);
-    --shadow-card: 0 4px 20px -2px hsl(240 10% 10% / 0.1);
-    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.3);
-
-    /* Animations */
+    /* Custom design tokens */
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 56%), hsl(210 100% 70%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 50% 98%));
+    --shadow-soft: 0 4px 20px hsl(210 50% 85%);
+    --shadow-glow: 0 0 30px hsl(210 100% 85% / 0.4);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --radius: 0.5rem;
 

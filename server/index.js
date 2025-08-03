@@ -6,6 +6,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("./models/User"); // Your User schema
 const uploadRoutes = require("./routes/upload.js"); // Your /upload route
+const followRoutes = require('./routes/follow');
+
+
 
 dotenv.config();
 
@@ -15,7 +18,7 @@ console.log("Cloudinary cloud name:", process.env.CLOUDINARY_CLOUD_NAME);
 const app = express();
 app.use(express.json());
 app.use(cors());
-
+app.use('/api', followRoutes);
 // Register API routes
 app.use("/api", uploadRoutes); // e.g., POST /api/upload
 

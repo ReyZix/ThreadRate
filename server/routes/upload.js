@@ -1,9 +1,8 @@
 const express = require('express');
-const Post = require('../models/Post.js'); // Your Mongoose post schema
-const router = express.Router();
+const Post = require('../models/Post.js');
+const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Needed to get username from ID
-
+const router = express.Router();
 
 // Create post with Cloudinary image URL
 router.post('/upload', async (req, res) => {
@@ -37,16 +36,45 @@ router.post('/upload', async (req, res) => {
   }
 });
 
-
-
+// Get all posts
 router.get('/posts', async (req, res) => {
   try {
-    const posts = await Post.find().sort({ createdAt: -1 }); // newest first
+    const posts = await Post.find().sort({ createdAt: -1 });
     res.json(posts);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch posts' });
   }
 });
 
+// Rate a post
+router.post('/posts/:postId/rate', async (req, res) => {
+  try {
+    const { value } = req.body;
+    const { postId } = req.params;
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'No token provided' });
+
+    const decoded = jwt.verify(token, 'secretkey');
+    const userId = decoded.id;
+
+    if (value < 0 || value > 5) return res.status(400).json({ error: 'Invalid rating' });
+
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+
+    const existingRating = post.ratings.find(r => r.userId.toString() === userId);
+    if (existingRating) {
+      existingRating.value = value;
+    } else {
+      post.ratings.push({ userId, value });
+    }
+
+    await post.save();
+    res.json({ message: 'Rating submitted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to submit rating' });
+  }
+});
 
 module.exports = router;
