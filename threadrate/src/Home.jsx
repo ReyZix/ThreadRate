@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
-  FaHome, FaStar, FaUser, FaBell, FaUpload, FaHeart, FaComment, FaShare
-} from 'react-icons/fa';
-import { useNavigate, Link } from 'react-router-dom';
+  AppBar, Toolbar, Container, Box, Typography, Button, IconButton, Avatar,
+  Card, CardHeader, CardMedia, CardContent, CardActions, Rating,
+  BottomNavigation, BottomNavigationAction, Paper, Skeleton,
+  FormControl, Select, MenuItem, Snackbar, Alert
+} from '@mui/material';
+import {
+  Home as HomeIcon, Star as StarIcon, AddPhotoAlternate as UploadIcon,
+  Notifications as BellIcon, Person as UserIcon,
+  Favorite as FavoriteIcon, FavoriteBorder as FavoriteBorderIcon,
+  ChatBubbleOutline as CommentIcon, Share as ShareIcon, Folder as ClosetIcon
+} from '@mui/icons-material';
 
+// StarRating component using MUI
 const StarRating = ({ postId, currentRating, onRate }) => {
-  const [hover, setHover] = useState(null);
-
-  const handleClick = async (rating) => {
+  const handleClick = async (newValue) => {
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(`http://localhost:5000/api/posts/${postId}/rate`, {
@@ -16,34 +24,23 @@ const StarRating = ({ postId, currentRating, onRate }) => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ value: rating }),
+        body: JSON.stringify({ value: newValue }),
       });
-      if (res.ok) onRate(rating);
+      if (res.ok) onRate(newValue);
     } catch (err) {
       console.error('Failed to rate post', err);
     }
   };
 
   return (
-    <div className="flex gap-1 items-center mt-2">
-      {[...Array(5)].map((_, i) => {
-        const ratingValue = i + 1;
-        return (
-          <FaStar
-            key={i}
-            onClick={() => handleClick(ratingValue)}
-            onMouseEnter={() => setHover(ratingValue)}
-            onMouseLeave={() => setHover(null)}
-            className={`cursor-pointer transition-colors duration-150 ${
-              (hover || currentRating) >= ratingValue
-                ? 'text-yellow-400'
-                : 'text-gray-300'
-            }`}
-          />
-        );
-      })}
-      <span className="text-sm font-medium ml-2">{currentRating} / 5</span>
-    </div>
+    <Rating
+      name={`rating-${postId}`}
+      value={Number(currentRating)}
+      precision={0.5}
+      onChange={(event, newValue) => {
+        handleClick(newValue);
+      }}
+    />
   );
 };
 
@@ -53,6 +50,8 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [postRatings, setPostRatings] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -60,28 +59,27 @@ export default function Home() {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         setCurrentUserId(payload.id);
-      } catch (err) {
-        console.error('Invalid token');
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    async function fetchPosts() {
-      try {
-        const res = await fetch('http://localhost:5000/api/posts');
-        const data = await res.json();
-        setPosts(data);
-        const ratingsMap = Object.fromEntries(
-          data.map(p => [p._id, average(p.ratings || [])])
-        );
-        setPostRatings(ratingsMap);
-      } catch (err) {
-        console.error('Failed to load posts:', err);
-      }
+      } catch (err) { console.error('Invalid token'); }
     }
     fetchPosts();
   }, []);
+
+  async function fetchPosts() {
+    setIsLoading(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/posts');
+      const data = await res.json();
+      setPosts(data);
+      const ratingsMap = Object.fromEntries(
+        data.map(p => [p._id, average(p.ratings || [])])
+      );
+      setPostRatings(ratingsMap);
+    } catch (err) {
+      console.error('Failed to load posts:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const average = (ratings) => {
     if (!ratings || ratings.length === 0) return 0;
@@ -92,193 +90,178 @@ export default function Home() {
   const handleLike = (postId) => {
     setLikedPosts(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(postId)) {
-        newSet.delete(postId);
-      } else {
-        newSet.add(postId);
-      }
+      newSet.has(postId) ? newSet.delete(postId) : newSet.add(postId);
       return newSet;
     });
   };
 
-  const handleFollow = async (userIdToFollow) => {
+  const handleFollow = async (userIdToFollow, username) => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:5000/api/follow/${userIdToFollow}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || 'Follow failed');
+        setSnackbar({ open: true, message: data.error || 'Follow failed', severity: 'error' });
       } else {
-        alert(`You are now following ${data.followed}`);
+        setSnackbar({ open: true, message: `You are now following ${username}`, severity: 'success' });
       }
     } catch (err) {
       console.error('Follow error', err);
     }
   };
 
+  const handleAddToCloset = async (e, postId) => {
+    const category = e.target.value;
+    if (!category) return;
+    const token = localStorage.getItem('token');
+    try {
+      await fetch('http://localhost:5000/api/closet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ postId, category })
+      });
+      setSnackbar({ open: true, message: 'Saved to Closet!', severity: 'success' });
+    } catch (err) {
+      console.error('Failed to save to Closet', err);
+      setSnackbar({ open: true, message: 'Failed to save to closet.', severity: 'error' });
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const renderSkeletons = () => (
+    [...Array(3)].map((_, index) => (
+      <Card key={index} sx={{ mb: 4 }}>
+        <CardHeader
+          avatar={<Skeleton animation="wave" variant="circular" width={40} height={40} />}
+          title={<Skeleton animation="wave" height={10} width="40%" />}
+          subheader={<Skeleton animation="wave" height={10} width="20%" />}
+        />
+        <Skeleton sx={{ height: 400 }} animation="wave" variant="rectangular" />
+        <CardContent>
+          <Skeleton animation="wave" height={10} style={{ marginBottom: 6 }} />
+          <Skeleton animation="wave" height={10} width="80%" />
+        </CardContent>
+      </Card>
+    ))
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-accent">
-      <header className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            ThreadRate
-          </h1>
-          <nav className="hidden md:flex items-center gap-6">
-            <Link to="/home"><button className="text-foreground hover:text-primary transition-colors">Discover</button></Link>
-            <Link to="/Following"><button className="text-foreground hover:text-primary transition-colors">Following</button></Link>
-            <Link to="/Blog"><button className="text-foreground hover:text-primary transition-colors">Blog</button></Link>
-            <Link to="/closet"><button className="text-foreground hover:text-primary transition-colors">Closet</button></Link>
-
-          </nav>
-          <div className="flex items-center gap-3">
-            <Link to="/upload">
-              <button className="bg-gradient-primary text-primary-foreground px-4 py-2 rounded-lg hover:shadow-glow transition-all duration-300 flex items-center gap-2">
-                <FaUpload className="text-sm" />
+    <Box sx={{ pb: 7 }}>
+      <AppBar position="sticky" sx={{ backgroundColor: 'background.paper', color: 'text.primary' }}>
+        <Container maxWidth="lg">
+          <Toolbar disableGutters>
+            <Typography variant="h6" component={RouterLink} to="/" sx={{ fontWeight: 'bold', textDecoration: 'none', color: 'primary.main' }}>
+              ThreadRate
+            </Typography>
+            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'center', gap: 2 }}>
+              
+              <Button component={RouterLink} to="/following" color="inherit">Following</Button>
+              <Button component={RouterLink} to="/blog" color="inherit">Blog</Button>
+              <Button component={RouterLink} to="/closet" color="inherit">Closet</Button>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Button component={RouterLink} to="/upload" variant="contained" startIcon={<UploadIcon />} sx={{ display: { xs: 'none', md: 'inline-flex' } }}>
                 Post Outfit
-              </button>
-            </Link>
-            <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
-              <FaUser className="text-primary-foreground text-sm" />
-            </div>
-          </div>
-        </div>
-      </header>
+              </Button>
+              <IconButton>
+                <Avatar sx={{ width: 32, height: 32 }} />
+              </IconButton>
+            </Box>
+          </Toolbar>
+        </Container>
+      </AppBar>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-foreground mb-4">Discover Amazing Fashion</h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Rate, discover, and share the latest fashion trends with our community of style enthusiasts
-          </p>
-        </div>
+      <Container maxWidth="sm" sx={{ mt: 4 }}>
+        <Box sx={{ textAlign: 'center', mb: 6 }}>
+          <Typography variant="h3" component="h2" sx={{ fontWeight: 'bold', mb: 2 }}>
+            Discover Amazing Fashion
+          </Typography>
+          <Typography variant="h6" color="text.secondary">
+            Rate, discover, and share the latest trends with our community.
+          </Typography>
+        </Box>
 
-        <div className="space-y-8">
-          {posts.length === 0 ? (
-            <p className="text-center text-muted-foreground">No posts yet. Be the first to upload!</p>
-          ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {isLoading ? renderSkeletons() : (
             posts.map((post) => (
-              <article
-                key={post._id}
-                className="bg-card rounded-xl shadow-fashion border border-border overflow-hidden hover:shadow-glow transition-all duration-300"
-              >
-                <div className="p-6 pb-4">
-                  <div className="flex items-center gap-3 mb-4">
-                    
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-foreground">{post.username}</h3>
-                      <p className="text-sm text-muted-foreground">{new Date(post.createdAt).toLocaleString()}</p>
-                    </div>
-                    {post.userId !== currentUserId && (
-                      <button
-                        className="text-sm text-primary border border-primary px-2 py-1 rounded hover:bg-primary hover:text-white transition-colors"
-                        onClick={() => handleFollow(post.userId)}
-                      >
-                        Follow
-                      </button>
-                    )}
-                  </div>
-
-                  <h4 className="text-xl font-bold text-foreground mb-2">{post.title}</h4>
-                  <p className="text-muted-foreground">{post.description}</p>
-                </div>
-
-              <div className="w-full h-[320px] overflow-hidden bg-gray-100 flex items-center justify-center">
-                <img
-                  src={post.imageUrl}
-                  alt={post.title}
-                  className="w-[320px] h-[320px] object-cover hover:scale-105 transition-transform duration-500 rounded-lg"
-                  style={{ maxWidth: '50%', maxHeight: '50%' }}
+              <Card key={post._id} variant="outlined">
+                <CardHeader
+                  avatar={<Avatar />}
+                  action={post.userId !== currentUserId && (
+                    <Button size="small" variant="outlined" onClick={() => handleFollow(post.userId, post.username)}>
+                      Follow
+                    </Button>
+                  )}
+                  title={<Typography variant="subtitle1" fontWeight="bold">{post.username}</Typography>}
+                  subheader={new Date(post.createdAt).toLocaleString()}
                 />
-              </div>
-
-
-
-                <div className="p-6 pt-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-6">
-                      <button
-                        onClick={() => handleLike(post._id)}
-                        className={`flex items-center gap-2 transition-colors ${
-                          likedPosts.has(post._id)
-                            ? 'text-red-500'
-                            : 'text-muted-foreground hover:text-red-500'
-                        }`}
-                      >
-                        <FaHeart className={likedPosts.has(post._id) ? 'fill-current' : ''} />
-                        <span className="font-medium">{likedPosts.has(post._id) ? 1 : 0}</span>
-                      </button>
-
-                      <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
-                        <FaComment />
-                        <span className="font-medium">0</span>
-                      </button>
-
-                      <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
-                        <FaShare />
-                        <span className="font-medium">Share</span>
-                      </button>
-                    </div>
-                  </div>
-
+                <CardMedia
+                  component="img"
+                  height="500"
+                  image={post.imageUrl}
+                  alt={post.title}
+                  sx={{ objectFit: 'cover' }}
+                />
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>{post.title}</Typography>
+                  <Typography variant="body2" color="text.secondary">{post.description}</Typography>
+                </CardContent>
+                <CardActions disableSpacing sx={{ flexDirection: 'column', alignItems: 'flex-start', px: 2 }}>
+                  <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box>
+                      <IconButton onClick={() => handleLike(post._id)}>
+                        {likedPosts.has(post._id) ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+                      </IconButton>
+                      <IconButton><CommentIcon /></IconButton>
+                      <IconButton><ShareIcon /></IconButton>
+                    </Box>
+                    <FormControl size="small" variant="outlined">
+                      <Select defaultValue="" displayEmpty onChange={(e) => handleAddToCloset(e, post._id)}>
+                        <MenuItem value="" disabled><em><ClosetIcon sx={{ fontSize: '1rem', mr: 1 }} />Add to Closet</em></MenuItem>
+                        <MenuItem value="to-wear">🛍️ To Wear</MenuItem>
+                        <MenuItem value="current-favorite">⭐ Current Favorite</MenuItem>
+                        <MenuItem value="past-favorite">📦 Past Favorite</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
                   <StarRating
                     postId={post._id}
                     currentRating={postRatings[post._id] || 0}
-                    onRate={(newRating) => {
-                      setPostRatings(prev => ({ ...prev, [post._id]: newRating }));
-                    }}
+                    onRate={(newRating) => setPostRatings(prev => ({ ...prev, [post._id]: newRating }))}
                   />
-                </div>
-
-                            <select
-              onChange={async (e) => {
-                const category = e.target.value;
-                if (!category) return;
-                const token = localStorage.getItem('token');
-                try {
-                  await fetch('http://localhost:5000/api/closet', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      Authorization: `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ postId: post._id, category })
-                  });
-                  alert('Saved to Closet!');
-                } catch (err) {
-                  console.error('Failed to save to Closet', err);
-                }
-              }}
-              defaultValue=""
-              className="mt-4 block border border-border px-3 py-2 rounded text-sm bg-white text-gray-700"
-            >
-              <option value="" disabled>📁 Add to Closet</option>
-              <option value="to-wear">🛍️ To Wear</option>
-              <option value="current-favorite">⭐ Current Favorite</option>
-              <option value="past-favorite">📦 Past Favorite</option>
-            </select>
-
-
-              </article>
+                </CardActions>
+              </Card>
             ))
           )}
-        </div>
-      </main>
+        </Box>
+      </Container>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-3">
-        <div className="flex items-center justify-around">
-          <FaHome className="text-xl text-primary" />
-          <FaStar className="text-xl text-muted-foreground" />
-          <FaUpload className="text-xl text-muted-foreground" />
-          <FaBell className="text-xl text-muted-foreground" />
-          <FaUser className="text-xl text-muted-foreground" />
-        </div>
-      </nav>
-    </div>
+      {/* Mobile nav */}
+      <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, display: { xs: 'block', md: 'none' } }} elevation={3}>
+        <BottomNavigation showLabels>
+          <BottomNavigationAction label="Discover" icon={<HomeIcon />} />
+          <BottomNavigationAction label="Top Rated" icon={<StarIcon />} />
+          <BottomNavigationAction component={RouterLink} to="/upload" label="Post" icon={<UploadIcon />} />
+          <BottomNavigationAction label="Activity" icon={<BellIcon />} />
+          <BottomNavigationAction label="Profile" icon={<UserIcon />} />
+        </BottomNavigation>
+      </Paper>
+
+      {/* Snackbar */}
+      <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 }

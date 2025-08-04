@@ -1,12 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
+import {
+  Container,
+  Box,
+  Typography,
+  Button,
+  Grid,
+  Card,
+  CardMedia,
+  CardContent,
+  CardActions,
+  FormControl,
+  Select,
+  MenuItem,
+  Skeleton,
+  CircularProgress,
+} from '@mui/material';
+import { ArrowBack as ArrowBackIcon, Inventory2 as InventoryIcon } from '@mui/icons-material';
 
-export default function Closet() {
+const Closet = () => {
   const [closet, setCloset] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const categories = ['to-wear', 'current-favorite', 'past-favorite'];
 
   const fetchCloset = () => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
 
     fetch('http://localhost:5000/api/closet', {
       headers: {
@@ -15,83 +39,127 @@ export default function Closet() {
     })
       .then((res) => res.json())
       .then((data) => setCloset(data))
-      .catch((err) => console.error('Failed to fetch closet items', err));
+      .catch((err) => console.error('Failed to fetch closet items', err))
+      .finally(() => setIsLoading(false));
   };
 
   useEffect(() => {
     fetchCloset();
   }, []);
 
-  return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">🧥 My Closet</h1>
-        <Link to="/home">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-            🔙 Back to Home
-          </button>
-        </Link>
-      </div>
+  const handleCategoryChange = async (e, item) => {
+    const newCategory = e.target.value;
+    const token = localStorage.getItem('token');
 
-      {closet.length === 0 ? (
-        <p className="text-gray-500">No saved posts yet.</p>
-      ) : (
-        <div className="space-y-6">
-          {['to-wear', 'current-favorite', 'past-favorite'].map((category) => (
-            <div key={category}>
-              <h2 className="text-xl font-semibold capitalize mb-2">
-                {category.replace('-', ' ')}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {closet
-                  .filter((item) => item.category === category)
-                  .map((item) => (
-                    <div key={item._id} className="border p-4 rounded shadow-sm bg-card">
-                      {/* IMAGE BLOCK (copied/resized like Home.jsx) */}
-                      <div className="w-full h-[320px] overflow-hidden bg-gray-100 flex items-center justify-center mb-3">
-                        <img
-                          src={item.post.imageUrl}
-                          alt={item.post.title}
-                          className="w-[320px] h-[320px] object-cover hover:scale-105 transition-transform duration-500 rounded-lg"
-                          style={{ maxWidth: '50%', maxHeight: '50%' }}
-                        />
-                      </div>
+    await fetch('http://localhost:5000/api/closet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        postId: item.post._id,
+        category: newCategory,
+      }),
+    });
 
-                      <h3 className="font-bold text-lg text-foreground">{item.post.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">{item.post.description}</p>
+    fetchCloset(); // refresh
+  };
 
-                      {/* MOVE DROPDOWN */}
-                      <select
-                        onChange={async (e) => {
-                          const newCategory = e.target.value;
-                          const token = localStorage.getItem('token');
-                          await fetch('http://localhost:5000/api/closet', {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              Authorization: `Bearer ${token}`
-                            },
-                            body: JSON.stringify({
-                              postId: item.post._id,
-                              category: newCategory
-                            })
-                          });
-                          fetchCloset(); // Refresh after moving
-                        }}
-                        defaultValue={item.category}
-                        className="mt-2 border border-border px-3 py-1 rounded text-sm bg-white text-gray-700"
-                      >
-                        <option value="to-wear">🛍️ To Wear</option>
-                        <option value="current-favorite">⭐ Current Favorite</option>
-                        <option value="past-favorite">📦 Past Favorite</option>
-                      </select>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+  const renderSkeletons = () => (
+    <Grid container spacing={3}>
+      {[...Array(4)].map((_, index) => (
+        <Grid item xs={12} md={6} key={index}>
+          <Skeleton variant="rectangular" height={200} />
+          <Skeleton variant="text" sx={{ fontSize: '1.25rem' }} />
+          <Skeleton variant="text" />
+        </Grid>
+      ))}
+    </Grid>
   );
-}
+
+  const renderEmptyState = () => (
+    <Box sx={{ textAlign: 'center', py: 10 }}>
+      <InventoryIcon sx={{ fontSize: 60, color: 'text.secondary' }} />
+      <Typography variant="h6" color="text.secondary" sx={{ mt: 2 }}>
+        Your closet is empty.
+      </Typography>
+      <Typography variant="body1" color="text.secondary">
+        Save posts from the home page to add them here!
+      </Typography>
+    </Box>
+  );
+
+  return (
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
+          🧥 My Closet
+        </Typography>
+        <Button
+          component={RouterLink}
+          to="/home"
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+        >
+          Back to Home
+        </Button>
+      </Box>
+
+      {isLoading ? renderSkeletons() : closet.length === 0 ? renderEmptyState() : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {categories.map((category) => {
+            const items = closet.filter((item) => item.category === category);
+            if (items.length === 0) return null;
+
+            return (
+              <Box key={category}>
+                <Typography variant="h5" component="h2" sx={{ textTransform: 'capitalize', mb: 2 }}>
+                  {category.replace('-', ' ')}
+                </Typography>
+                <Grid container spacing={3}>
+                  {items.map((item) => (
+                    <Grid item xs={12} md={6} key={item._id}>
+                      <Card>
+                        <CardMedia
+                          component="img"
+                          height="250"
+                          image={item.post.imageUrl}
+                          alt={item.post.title}
+                          sx={{ objectFit: 'cover' }}
+                        />
+                        <CardContent>
+                          <Typography gutterBottom variant="h6" component="div" noWrap>
+                            {item.post.title}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" noWrap>
+                            {item.post.description}
+                          </Typography>
+                        </CardContent>
+                        <CardActions sx={{ justifyContent: 'flex-start', px: 2, pb: 2 }}>
+                          <FormControl size="small">
+                            <Select
+                              value={item.category}
+                              onChange={(e) => handleCategoryChange(e, item)}
+                            >
+                              <MenuItem value="to-wear">🛍️ To Wear</MenuItem>
+                              <MenuItem value="current-favorite">⭐ Current Favorite</MenuItem>
+                              <MenuItem value="past-favorite">📦 Past Favorite</MenuItem>
+                            </Select>
+                          </FormControl>
+                        </CardActions>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            );
+          })}
+        </Box>
+      )}
+    </Container>
+  );
+};
+
+export default Closet;

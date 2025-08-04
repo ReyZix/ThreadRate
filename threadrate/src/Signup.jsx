@@ -1,9 +1,34 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaLock, FaGoogle, FaApple } from 'react-icons/fa';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { FaGoogle, FaApple } from 'react-icons/fa';
+import {
+  Container,
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  CircularProgress,
+  Alert,
+  InputAdornment,
+  FormControlLabel,
+  Checkbox,
+  Divider,
+  Link
+} from '@mui/material';
+import {
+  Person as PersonIcon,
+  Email as EmailIcon,
+  Lock as LockIcon
+} from '@mui/icons-material';
 
 const Signup = () => {
-  const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -15,8 +40,8 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Validate passwords match
+    setMessage('');
+
     if (form.password !== form.confirmPassword) {
       setMessage('Passwords do not match');
       setIsLoading(false);
@@ -24,11 +49,27 @@ const Signup = () => {
     }
 
     try {
-      // Simulate API call for demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const res = await fetch('http://localhost:5000/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: form.username,
+          email: form.email,
+          password: form.password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(data.error || 'Signup failed. Please try again.');
+        return;
+      }
+
       setMessage('Account created successfully! Redirecting...');
-      setTimeout(() => navigate('/home'), 1000);
+      setTimeout(() => navigate('/login'), 1000);
     } catch (err) {
+      console.error(err);
       setMessage('Signup failed. Please try again.');
     } finally {
       setIsLoading(false);
@@ -36,143 +77,166 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-accent px-4 py-8">
-      <div className="w-full max-w-md">
-        {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
+    <Container component="main" maxWidth="xs" sx={{ mt: 8, mb: 4 }}>
+      <Paper elevation={3} sx={{ padding: 4, borderRadius: '16px' }}>
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
             ThreadRate
-          </h1>
-          <p className="text-muted-foreground">Join the fashion community</p>
-        </div>
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Join the fashion community
+          </Typography>
+        </Box>
 
-        {/* Signup Form */}
-        <div className="bg-card p-8 rounded-2xl shadow-fashion border border-border/50">
-          <h2 className="text-2xl font-bold text-center mb-6 text-foreground">
-            Create Your Account
-          </h2>
-          
-          {message && (
-            <div className={`text-center text-sm mb-6 p-4 rounded-lg ${
-              message.includes('successfully') 
-                ? 'bg-green-500/10 text-green-600 border border-green-500/20' 
-                : 'bg-destructive/10 text-destructive border border-destructive/20'
-            }`}>
-              {message}
-            </div>
-          )}
+        <Typography variant="h5" component="h2" sx={{ textAlign: 'center', mb: 2, fontWeight: 'bold' }}>
+          Create Your Account
+        </Typography>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Username Input */}
-            <div className="relative">
-              <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <input 
-                name="username" 
-                placeholder="Choose a username" 
-                value={form.username}
-                onChange={handleChange} 
-                required 
-                className="w-full pl-10 pr-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:shadow-glow focus:border-primary focus:outline-none"
-              />
-            </div>
+        {message && (
+          <Alert
+            severity={message.includes('successfully') ? 'success' : 'error'}
+            sx={{ mb: 2 }}
+          >
+            {message}
+          </Alert>
+        )}
 
-            {/* Email Input */}
-            <div className="relative">
-              <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <input 
-                name="email" 
-                type="email" 
-                placeholder="Enter your email" 
-                value={form.email}
-                onChange={handleChange} 
-                required 
-                className="w-full pl-10 pr-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:shadow-glow focus:border-primary focus:outline-none"
-              />
-            </div>
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="username"
+            name="username"
+            label="Username"
+            autoComplete="username"
+            value={form.username}
+            onChange={handleChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <PersonIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
 
-            {/* Password Input */}
-            <div className="relative">
-              <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <input 
-                name="password" 
-                type="password" 
-                placeholder="Create a password" 
-                value={form.password}
-                onChange={handleChange} 
-                required 
-                className="w-full pl-10 pr-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:shadow-glow focus:border-primary focus:outline-none"
-              />
-            </div>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            name="email"
+            label="Email Address"
+            autoComplete="email"
+            value={form.email}
+            onChange={handleChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <EmailIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
 
-            {/* Confirm Password Input */}
-            <div className="relative">
-              <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <input 
-                name="confirmPassword" 
-                type="password" 
-                placeholder="Confirm your password" 
-                value={form.confirmPassword}
-                onChange={handleChange} 
-                required 
-                className="w-full pl-10 pr-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:shadow-glow focus:border-primary focus:outline-none"
-              />
-            </div>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Create a password"
+            type="password"
+            id="password"
+            value={form.password}
+            onChange={handleChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
 
-            {/* Terms */}
-            <div className="flex items-start gap-3">
-              <input 
-                type="checkbox" 
-                id="terms" 
-                required
-                className="mt-1 accent-primary"
-              />
-              <label htmlFor="terms" className="text-sm text-muted-foreground">
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="confirmPassword"
+            label="Confirm your password"
+            type="password"
+            id="confirmPassword"
+            value={form.confirmPassword}
+            onChange={handleChange}
+            error={form.confirmPassword !== '' && form.password !== form.confirmPassword}
+            helperText={
+              form.confirmPassword !== '' && form.password !== form.confirmPassword
+                ? 'Passwords do not match'
+                : ''
+            }
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <FormControlLabel
+            sx={{ mt: 1 }}
+            control={<Checkbox value="accept" color="primary" required />}
+            label={
+              <Typography variant="body2">
                 I agree to the{' '}
-                <span className="text-primary hover:underline cursor-pointer">Terms of Service</span>
+                <Link href="#" variant="body2">Terms of Service</Link>
                 {' '}and{' '}
-                <span className="text-primary hover:underline cursor-pointer">Privacy Policy</span>
-              </label>
-            </div>
+                <Link href="#" variant="body2">Privacy Policy</Link>
+              </Typography>
+            }
+          />
 
-            {/* Submit Button */}
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              className="w-full py-3 bg-gradient-primary text-primary-foreground rounded-lg font-medium hover:shadow-glow transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={isLoading}
+            sx={{ mt: 2, mb: 2, py: 1.5 }}
+          >
+            {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Create Account'}
+          </Button>
+
+          <Divider sx={{ my: 2 }}>or continue with</Divider>
+
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<FaGoogle />}
+              sx={{ py: 1.5 }}
             >
-              {isLoading ? 'Creating Account...' : 'Create Account'}
-            </button>
-          </form>
+              Google
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<FaApple />}
+              sx={{ py: 1.5 }}
+            >
+              Apple
+            </Button>
+          </Box>
 
-          {/* Divider */}
-          <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-border"></div>
-            <span className="px-4 text-sm text-muted-foreground bg-card">or continue with</span>
-            <div className="flex-1 border-t border-border"></div>
-          </div>
-
-          {/* Social Login */}
-          <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 py-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-              <FaGoogle className="text-red-500" />
-              <span className="text-sm font-medium">Google</span>
-            </button>
-            <button className="flex items-center justify-center gap-2 py-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-              <FaApple className="text-foreground" />
-              <span className="text-sm font-medium">Apple</span>
-            </button>
-          </div>
-
-          {/* Login Link */}
-          <p className="mt-6 text-sm text-center text-muted-foreground">
+          <Typography variant="body2" sx={{ mt: 3, textAlign: 'center' }}>
             Already have an account?{' '}
-            <Link to="/login" className="text-primary hover:underline font-medium">
+            <Link component={RouterLink} to="/login" sx={{ fontWeight: 500 }}>
               Sign in here
             </Link>
-          </p>
-        </div>
-      </div>
-    </div>
+          </Typography>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 

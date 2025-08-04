@@ -1,6 +1,28 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { FaEnvelope, FaLock, FaGoogle, FaApple, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { FaGoogle, FaApple } from 'react-icons/fa';
+import {
+  Container,
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  CircularProgress,
+  Alert,
+  InputAdornment,
+  IconButton,
+  FormControlLabel,
+  Checkbox,
+  Divider,
+  Link
+} from '@mui/material';
+import {
+  Visibility,
+  VisibilityOff,
+  Email as EmailIcon,
+  Lock as LockIcon
+} from '@mui/icons-material';
 
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -13,154 +35,171 @@ const Login = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsLoading(true);
-  setMessage('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setMessage('');
 
-  try {
-    const res = await fetch('http://localhost:5000/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
+    try {
+      const res = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      setMessage(data.error || 'Login failed. Please try again.');
-      return;
+      if (!res.ok) {
+        setMessage(data.error || 'Login failed. Please try again.');
+        return;
+      }
+
+      localStorage.setItem('token', data.token);
+      setMessage('Welcome back! Redirecting...');
+      setTimeout(() => navigate('/'), 1000);
+    } catch (err) {
+      console.error(err);
+      setMessage('Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-
-    // Save JWT token to localStorage
-    localStorage.setItem('token', data.token);
-    setMessage('Welcome back! Redirecting...');
-    setTimeout(() => navigate('/'), 1000);
-  } catch (err) {
-    console.error(err);
-    setMessage('Login failed. Please try again.');
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-accent px-4 py-8">
-      <div className="w-full max-w-md">
-        {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
+    <Container component="main" maxWidth="xs" sx={{ mt: 8, mb: 4 }}>
+      <Paper elevation={3} sx={{ padding: 4, borderRadius: '16px' }}>
+        {/* Logo / Branding */}
+        <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
             ThreadRate
-          </h1>
-          <p className="text-muted-foreground">Welcome back to the fashion community</p>
-        </div>
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Welcome back to the fashion community
+          </Typography>
+        </Box>
 
-        {/* Login Form */}
-        <div className="bg-card p-8 rounded-2xl shadow-fashion border border-border/50">
-          <h2 className="text-2xl font-bold text-center mb-6 text-foreground">
-            Sign In to Your Account
-          </h2>
-          
-          {message && (
-            <div className={`text-center text-sm mb-6 p-4 rounded-lg ${
-              message.includes('Welcome') 
-                ? 'bg-green-500/10 text-green-600 border border-green-500/20' 
-                : 'bg-destructive/10 text-destructive border border-destructive/20'
-            }`}>
-              {message}
-            </div>
-          )}
+        <Typography variant="h5" component="h2" sx={{ textAlign: 'center', mb: 2, fontWeight: 'bold' }}>
+          Sign In to Your Account
+        </Typography>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email Input */}
-            <div className="relative">
-              <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <input 
-                name="email" 
-                type="email" 
-                placeholder="Enter your email" 
-                value={form.email}
-                onChange={handleChange} 
-                required 
-                className="w-full pl-10 pr-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:shadow-glow focus:border-primary focus:outline-none"
-              />
-            </div>
+        {/* Message Alert */}
+        {message && (
+          <Alert
+            severity={message.includes('Welcome') ? 'success' : 'error'}
+            sx={{ mb: 2 }}
+          >
+            {message}
+          </Alert>
+        )}
 
-            {/* Password Input */}
-            <div className="relative">
-              <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <input 
-                name="password" 
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password" 
-                value={form.password}
-                onChange={handleChange} 
-                required 
-                className="w-full pl-10 pr-12 py-3 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:shadow-glow focus:border-primary focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
-            </div>
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          {/* Email Field */}
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            name="email"
+            label="Email Address"
+            autoComplete="email"
+            value={form.email}
+            onChange={handleChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <EmailIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
-                <input type="checkbox" className="accent-primary" />
-                Remember me
-              </label>
-              <button 
-                type="button"
-                className="text-sm text-primary hover:underline"
-              >
-                Forgot password?
-              </button>
-            </div>
+          {/* Password Field */}
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            id="password"
+            autoComplete="current-password"
+            value={form.password}
+            onChange={handleChange}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockIcon />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
 
-            {/* Submit Button */}
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              className="w-full py-3 bg-gradient-primary text-primary-foreground rounded-lg font-medium hover:shadow-glow transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Signing In...' : 'Sign In'}
-            </button>
-          </form>
+          {/* Remember Me / Forgot Password */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 1 }}>
+            <FormControlLabel
+              control={<Checkbox value="remember" color="primary" />}
+              label="Remember me"
+            />
+            <Link component="button" variant="body2" type="button">
+              Forgot password?
+            </Link>
+          </Box>
+
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={isLoading}
+            sx={{ mt: 2, mb: 2, py: 1.5 }}
+          >
+            {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+          </Button>
 
           {/* Divider */}
-          <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-border"></div>
-            <span className="px-4 text-sm text-muted-foreground bg-card">or continue with</span>
-            <div className="flex-1 border-t border-border"></div>
-          </div>
+          <Divider sx={{ my: 2 }}>or continue with</Divider>
 
-          {/* Social Login */}
-          <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 py-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-              <FaGoogle className="text-red-500" />
-              <span className="text-sm font-medium">Google</span>
-            </button>
-            <button className="flex items-center justify-center gap-2 py-3 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-              <FaApple className="text-foreground" />
-              <span className="text-sm font-medium">Apple</span>
-            </button>
-          </div>
+          {/* Social Buttons */}
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<FaGoogle />}
+              sx={{ py: 1.5 }}
+            >
+              Google
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<FaApple />}
+              sx={{ py: 1.5 }}
+            >
+              Apple
+            </Button>
+          </Box>
 
-          {/* Signup Link */}
-          <p className="mt-6 text-sm text-center text-muted-foreground">
-            Don't have an account?{' '}
-            <Link to="/signup" className="text-primary hover:underline font-medium">
+          {/* Sign Up */}
+          <Typography variant="body2" sx={{ mt: 3, textAlign: 'center' }}>
+            Don&apos;t have an account?{' '}
+            <Link component={RouterLink} to="/signup" sx={{ fontWeight: 500 }}>
               Create one here
             </Link>
-          </p>
-        </div>
-      </div>
-    </div>
+          </Typography>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 

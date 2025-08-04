@@ -32,4 +32,43 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Add this below your router.get('/', ...) route
+
+router.post('/', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No token provided' });
+
+  try {
+    const decoded = jwt.verify(token, 'secretkey');
+    const userId = decoded.id;
+    const { postId, category } = req.body;
+
+    if (!postId || !category) {
+      return res.status(400).json({ error: 'Missing postId or category' });
+    }
+
+    // Check if already saved (prevent duplicates)
+    const existing = await Closet.findOne({ userId, postId });
+    if (existing) {
+      existing.category = category;
+      await existing.save();
+      return res.json({ message: 'Closet entry updated' });
+    }
+
+    const newEntry = new Closet({
+      userId,
+      postId,
+      category
+    });
+
+    await newEntry.save();
+    res.status(201).json({ message: 'Saved to closet!' });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to save to closet' });
+  }
+});
+
+
 module.exports = router;

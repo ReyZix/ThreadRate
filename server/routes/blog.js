@@ -5,7 +5,7 @@ const User = require('../models/User');
 
 const router = express.Router();
 
-// Middleware for token-based auth
+// Middleware: Authenticate JWT and attach user info to request
 const authenticate = async (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'No token provided' });
@@ -22,17 +22,19 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-// Create a blog
+// POST /api/blogs — Create a blog post
 router.post('/', authenticate, async (req, res) => {
   try {
     const { title, content, isPublic } = req.body;
+
     const blog = new Blog({
       title,
       content,
       isPublic,
       userId: req.user.id,
-      username: req.user.username
+      username: req.user.username // embed username at creation
     });
+
     await blog.save();
     res.status(201).json(blog);
   } catch (err) {
@@ -41,20 +43,20 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
-// Get all public blogs
+// GET /api/blogs/public — Public blogs from all users
 router.get('/public', async (req, res) => {
   try {
-    const blogs = await Blog.find({ isPublic: true });
+    const blogs = await Blog.find({ isPublic: true }).sort({ createdAt: -1 });
     res.json(blogs);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch public blogs' });
   }
 });
 
-// Get blogs by current user
+// GET /api/blogs/mine — Blogs by the logged-in user
 router.get('/mine', authenticate, async (req, res) => {
   try {
-    const blogs = await Blog.find({ userId: req.user.id });
+    const blogs = await Blog.find({ userId: req.user.id }).sort({ createdAt: -1 });
     res.json(blogs);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch your blogs' });
