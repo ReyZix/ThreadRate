@@ -7,6 +7,12 @@ const jwt = require("jsonwebtoken");
 const User = require("./models/User"); // Your User schema
 const uploadRoutes = require("./routes/upload.js"); // Your /upload route
 const followRoutes = require('./routes/follow');
+const blogRoutes = require('./routes/blog.js'); // Import blog routes
+
+const closetRoutes = require('./routes/closet');
+
+
+
 
 
 
@@ -21,6 +27,8 @@ app.use(cors());
 app.use('/api', followRoutes);
 // Register API routes
 app.use("/api", uploadRoutes); // e.g., POST /api/upload
+app.use('/api/blogs', blogRoutes);
+app.use('/api/closet', closetRoutes);
 
 // Connect to MongoDB
 mongoose

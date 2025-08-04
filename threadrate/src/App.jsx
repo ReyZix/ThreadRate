@@ -5,6 +5,9 @@ import Upload from './Upload';
 import Home from './Home';
 import Following from './Following';
 import Trending from './Trending';
+import Blog from './Blog';
+import Closet from './Closet'; 
+
 
 
 function App() {
@@ -17,8 +20,11 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/upload" element={<Upload />} />
           <Route path="/home" element={<Home />} /> 
-          <Route path="/trending" element={<Trending />} /> 
+          <Route path="/trending" element={<Trending />} />
+          <Route path="/blog" element={<Blog />} />
           <Route path="/following" element={<Following />} /> 
+          <Route path="/closet" element={<Closet />} />
+
           
         </Routes>
       </BrowserRouter>

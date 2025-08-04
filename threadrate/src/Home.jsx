@@ -132,7 +132,9 @@ export default function Home() {
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/home"><button className="text-foreground hover:text-primary transition-colors">Discover</button></Link>
             <Link to="/Following"><button className="text-foreground hover:text-primary transition-colors">Following</button></Link>
-            <Link to="/Trending"><button className="text-foreground hover:text-primary transition-colors">Trending</button></Link>
+            <Link to="/Blog"><button className="text-foreground hover:text-primary transition-colors">Blog</button></Link>
+            <Link to="/closet"><button className="text-foreground hover:text-primary transition-colors">Closet</button></Link>
+
           </nav>
           <div className="flex items-center gap-3">
             <Link to="/upload">
@@ -167,9 +169,7 @@ export default function Home() {
               >
                 <div className="p-6 pb-4">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-white bg-primary">
-                      {post.title.charAt(0).toUpperCase()}
-                    </div>
+                    
                     <div className="flex-1">
                       <h3 className="font-semibold text-foreground">{post.username}</h3>
                       <p className="text-sm text-muted-foreground">{new Date(post.createdAt).toLocaleString()}</p>
@@ -234,6 +234,36 @@ export default function Home() {
                     }}
                   />
                 </div>
+
+                            <select
+              onChange={async (e) => {
+                const category = e.target.value;
+                if (!category) return;
+                const token = localStorage.getItem('token');
+                try {
+                  await fetch('http://localhost:5000/api/closet', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ postId: post._id, category })
+                  });
+                  alert('Saved to Closet!');
+                } catch (err) {
+                  console.error('Failed to save to Closet', err);
+                }
+              }}
+              defaultValue=""
+              className="mt-4 block border border-border px-3 py-2 rounded text-sm bg-white text-gray-700"
+            >
+              <option value="" disabled>📁 Add to Closet</option>
+              <option value="to-wear">🛍️ To Wear</option>
+              <option value="current-favorite">⭐ Current Favorite</option>
+              <option value="past-favorite">📦 Past Favorite</option>
+            </select>
+
+
               </article>
             ))
           )}
