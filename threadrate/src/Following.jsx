@@ -21,7 +21,7 @@ export default function Following() {
   useEffect(() => {
     async function fetchPosts() {
       try {
-        const res = await fetch('http://localhost:5000/api/posts/following'); // Adjust endpoint if needed
+        const res = await fetch('http://localhost:5000/api/posts/following');
         const data = await res.json();
         setPosts(data);
       } catch (err) {
@@ -61,7 +61,7 @@ export default function Following() {
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'center', gap: 2 }}>
               <Button component={RouterLink} to="/home" color="inherit">Discover</Button>
               <Button component={RouterLink} to="/following" color="inherit">Following</Button>
-              <Button component={RouterLink} to="/trending" color="inherit">Trending</Button>
+              <Button component={RouterLink} to="/blog" color="inherit">Blog</Button>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Button
@@ -148,10 +148,8 @@ export default function Following() {
       >
         <BottomNavigation showLabels>
           <BottomNavigationAction label="Discover" icon={<HomeIcon />} component={RouterLink} to="/home" />
-          <BottomNavigationAction label="Top Rated" icon={<StarIcon />} component={RouterLink} to="/trending" />
-          <BottomNavigationAction label="Post" icon={<UploadIcon />} component={RouterLink} to="/upload" />
-          <BottomNavigationAction label="Activity" icon={<BellIcon />} />
-          <BottomNavigationAction label="Profile" icon={<UserIcon />} />
+          <BottomNavigationAction label="Following" icon={<StarIcon />} component={RouterLink} to="/following" />
+          <BottomNavigationAction label="Blog" icon={<BellIcon />} component={RouterLink} to="/blog" />
         </BottomNavigation>
       </Paper>
 
