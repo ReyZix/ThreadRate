@@ -60,8 +60,8 @@ export default function Following() {
             </Typography>
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'center', gap: 2 }}>
               <Button component={RouterLink} to="/home" color="inherit">Discover</Button>
-              <Button component={RouterLink} to="/following" color="inherit">Following</Button>
-              <Button component={RouterLink} to="/trending" color="inherit">Trending</Button>
+              <Button component={RouterLink} to="/blog" color="inherit">Blog</Button>
+              <Button component={RouterLink} to="/closet" color="inherit">Closet</Button>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Button
@@ -148,7 +148,7 @@ export default function Following() {
       >
         <BottomNavigation showLabels>
           <BottomNavigationAction label="Discover" icon={<HomeIcon />} component={RouterLink} to="/home" />
-          <BottomNavigationAction label="Top Rated" icon={<StarIcon />} component={RouterLink} to="/trending" />
+          <BottomNavigationAction label="Closet" icon={<StarIcon />} component={RouterLink} to="/closet" />
           <BottomNavigationAction label="Post" icon={<UploadIcon />} component={RouterLink} to="/upload" />
           <BottomNavigationAction label="Activity" icon={<BellIcon />} />
           <BottomNavigationAction label="Profile" icon={<UserIcon />} />
