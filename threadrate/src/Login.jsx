@@ -56,7 +56,7 @@ const Login = () => {
 
       localStorage.setItem('token', data.token);
       setMessage('Welcome back! Redirecting...');
-      setTimeout(() => navigate('/'), 1000);
+      setTimeout(() => navigate('/home'), 1000);
     } catch (err) {
       console.error(err);
       setMessage('Login failed. Please try again.');
